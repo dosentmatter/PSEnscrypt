@@ -56,22 +56,25 @@ function Create-Derive-Bytes {
         $iterations,
 
         [Parameter(Mandatory = $true)]
-        [HashAlgorithmName]
+        [System.Security.Cryptography.HashAlgorithmName]
         $hashAlgorithm
     )
 
-    $ptr = [Marshal]::SecureStringToBSTR($password)
+    $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)
     $passwordByteArray = $null
     try {
-        $length = [Marshal]::ReadInt32($ptr, -4)
+        $length = [System.Runtime.InteropServices.Marshal]::ReadInt32($ptr, -4)
         $passwordByteArray = [byte[]]::new($length)
-        $handle = [GCHandle]::Alloc($passwordByteArray, [GCHandleType]::Pinned)
+        $handle = [System.Runtime.InteropServices.GCHandle]::Alloc(
+            $passwordByteArray,
+            [System.Runtime.InteropServices.GCHandleType]::Pinned
+        )
         try {
             for ($i = 0; $i -lt $length; $i++) {
-                $passwordByteArray[$i] = [Marshal]::ReadByte($ptr, $i)
+                $passwordByteArray[$i] = [System.Runtime.InteropServices.Marshal]::ReadByte($ptr, $i)
             }
 
-            [Rfc2898DeriveBytes]::new(
+            [System.Security.Cryptography.Rfc2898DeriveBytes]::new(
                 $passwordByteArray,
                 $salt,
                 $iterations,
@@ -86,7 +89,7 @@ function Create-Derive-Bytes {
         }
     }
     finally {
-        [Marshal]::ZeroFreeBSTR($ptr)
+        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
     }
 }
 
@@ -159,80 +162,11 @@ Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
     }
 }
 
-$decryptAndRunScriptBlockCreateCommand = @(@'
-function Using-Object {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [AllowEmptyString()]
-        [AllowEmptyCollection()]
-        [AllowNull()]
-        [Object]
-        $InputObject,
+$decryptAndRunScriptBlockCreateCommand = @(@"
+function Using-Object {${function:Using-Object}}
 
-        [Parameter(Mandatory = $true)]
-        [scriptblock]
-        $ScriptBlock
-    )
-
-    try {
-        . $ScriptBlock
-    }
-    finally {
-        if ($null -ne $InputObject -and $InputObject -is [System.IDisposable]) {
-            $InputObject.Dispose()
-        }
-    }
-}
-
-function Create-Derive-Bytes {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true)]
-        [SecureString]
-        $password,
-
-        [Parameter(Mandatory = $true)]
-        [byte[]]
-        $salt,
-
-        [Parameter(Mandatory = $true)]
-        [Int32]
-        $iterations,
-
-        [Parameter(Mandatory = $true)]
-        [System.Security.Cryptography.HashAlgorithmName]
-        $hashAlgorithm
-    )
-
-    $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)
-    $passwordByteArray = $null
-    try {
-        $length = [System.Runtime.InteropServices.Marshal]::ReadInt32($ptr, -4)
-        $passwordByteArray = [byte[]]::new($length)
-        $handle = [System.Runtime.InteropServices.GCHandle]::Alloc($passwordByteArray, [System.Runtime.InteropServices.GCHandleType]::Pinned)
-        try {
-            for ($i = 0; $i -lt $length; $i++) {
-                $passwordByteArray[$i] = [System.Runtime.InteropServices.Marshal]::ReadByte($ptr, $i)
-            }
-
-            [System.Security.Cryptography.Rfc2898DeriveBytes]::new(
-                $passwordByteArray,
-                $salt,
-                $iterations,
-                $hashAlgorithm
-            )
-        }
-        finally {
-            [System.Array]::Clear($passwordByteArray, 0, $passwordByteArray.length)
-            $handle.Free()
-        }
-    }
-    finally {
-        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
-    }
-}
-'@, @"
+function Create-Derive-Bytes {${function:Create-Derive-Bytes}}
+"@, @"
 
 `$saltBytes = [System.Convert]::FromBase64String('$salt')
 `$nonceBytes = [System.Convert]::FromBase64String('$($nonceRef.Value)')
