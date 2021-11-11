@@ -56,25 +56,22 @@ function Create-Derive-Bytes {
         $iterations,
 
         [Parameter(Mandatory = $true)]
-        [System.Security.Cryptography.HashAlgorithmName]
+        [HashAlgorithmName]
         $hashAlgorithm
     )
 
-    $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($password)
+    $ptr = [Marshal]::SecureStringToBSTR($password)
     $passwordByteArray = $null
     try {
-        $length = [System.Runtime.InteropServices.Marshal]::ReadInt32($ptr, -4)
+        $length = [Marshal]::ReadInt32($ptr, -4)
         $passwordByteArray = [byte[]]::new($length)
-        $handle = [System.Runtime.InteropServices.GCHandle]::Alloc(
-            $passwordByteArray,
-            [System.Runtime.InteropServices.GCHandleType]::Pinned
-        )
+        $handle = [GCHandle]::Alloc($passwordByteArray, [GCHandleType]::Pinned)
         try {
             for ($i = 0; $i -lt $length; $i++) {
-                $passwordByteArray[$i] = [System.Runtime.InteropServices.Marshal]::ReadByte($ptr, $i)
+                $passwordByteArray[$i] = [Marshal]::ReadByte($ptr, $i)
             }
 
-            [System.Security.Cryptography.Rfc2898DeriveBytes]::new(
+            [Rfc2898DeriveBytes]::new(
                 $passwordByteArray,
                 $salt,
                 $iterations,
@@ -89,7 +86,7 @@ function Create-Derive-Bytes {
         }
     }
     finally {
-        [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr)
+        [Marshal]::ZeroFreeBSTR($ptr)
     }
 }
 
@@ -163,6 +160,9 @@ Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
 }
 
 $decryptAndRunScriptBlockCreateCommand = @(@"
+using namespace System.Security.Cryptography
+using namespace System.Runtime.InteropServices
+
 function Using-Object {${function:Using-Object}}
 
 function Create-Derive-Bytes {${function:Create-Derive-Bytes}}
@@ -180,7 +180,7 @@ $deriveBytesArguments = @{
     password      = (Read-Host -Prompt 'Enter Password' -AsSecureString)
     salt          = $saltBytes
     iterations    = 500000
-    hashAlgorithm = [System.Security.Cryptography.HashAlgorithmName]::SHA256
+    hashAlgorithm = [HashAlgorithmName]::SHA256
 }
 Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
     $key = $null
@@ -188,8 +188,8 @@ Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
 
     try {
         $key = $deriveBytes.GetBytes(32)
-        $handle = [System.Runtime.InteropServices.GCHandle]::Alloc($key, [System.Runtime.InteropServices.GCHandleType]::Pinned)
-        Using-Object ($aesGcm = [System.Security.Cryptography.AesGcm]::new($key)) {
+        $handle = [GCHandle]::Alloc($key, [GCHandleType]::Pinned)
+        Using-Object ($aesGcm = [AesGcm]::new($key)) {
             $plaintextBytes = [byte[]]::new($ciphertextBytes.Length)
 
             try {
@@ -199,7 +199,7 @@ Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
                     $tagBytes,
                     $plaintextBytes
                 )
-            } catch [System.Security.Cryptography.CryptographicException] {
+            } catch [CryptographicException] {
                 Write-Host 'Wrong Password'
                 exit
             }
