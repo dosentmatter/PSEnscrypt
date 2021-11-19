@@ -159,9 +159,10 @@ Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
     }
 }
 
-$decryptAndRunScriptBlockCreateCommand = @(@"
+$decryptAndRunScriptBlockCreateCommand = @(@'
 using namespace System.Security.Cryptography
 using namespace System.Runtime.InteropServices
+'@, @"
 
 function Using-Object {${function:Using-Object}}
 
