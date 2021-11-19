@@ -174,7 +174,7 @@ function Create-Derive-Bytes {${function:Create-Derive-Bytes}}
 `$ciphertextBytes = [System.Convert]::FromBase64String('$($ciphertextRef.Value)')
 `$tagBytes = [System.Convert]::FromBase64String('$($tagRef.Value)')
 "@, {
-$command = $null
+$commandRef = [ref]$null
 
 $deriveBytesArguments = @{
     password      = (Read-Host -Prompt 'Enter Password' -AsSecureString)
@@ -204,7 +204,7 @@ Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
                 exit
             }
 
-            Set-Variable -Scope 2 -Name command -Value ([System.Text.Encoding]::UTF8.GetString($plainTextBytes))
+            $commandRef.Value = [System.Text.Encoding]::UTF8.GetString($plainTextBytes)
         }
     } finally {
         if ($null -ne $key) {
@@ -216,7 +216,7 @@ Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
     }
 }
 
-$command |
+$commandRef.Value |
 Invoke-Expression |
 ForEach-Object { & $_ }
 }.ToString()
