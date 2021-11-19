@@ -173,8 +173,7 @@ function Create-Derive-Bytes {${function:Create-Derive-Bytes}}
 `$nonceBytes = [System.Convert]::FromBase64String('$($nonceRef.Value)')
 `$ciphertextBytes = [System.Convert]::FromBase64String('$($ciphertextRef.Value)')
 `$tagBytes = [System.Convert]::FromBase64String('$($tagRef.Value)')
-"@, @'
-
+"@, {
 $command = $null
 
 $deriveBytesArguments = @{
@@ -220,7 +219,7 @@ Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
 $command |
 Invoke-Expression |
 ForEach-Object { & $_ }
-'@
+}.ToString()
 ) -join "`r`n"
 
 $decryptAndRunScriptBlockCreateScriptBlock = [scriptblock]::Create($decryptAndRunScriptBlockCreateCommand)
