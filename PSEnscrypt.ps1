@@ -223,7 +223,6 @@ ForEach-Object { & $_ }
 '@
 ) -join "`r`n"
 
-
 $decryptAndRunScriptBlockCreateScriptBlock = [scriptblock]::Create($decryptAndRunScriptBlockCreateCommand)
 
 "$(Compress-ScriptBlock -ScriptBlock $decryptAndRunScriptBlockCreateScriptBlock -GZip -NoBlock)|%{&`$_}"
