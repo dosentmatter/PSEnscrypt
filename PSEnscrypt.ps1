@@ -201,6 +201,8 @@ Using-Object ($deriveBytes = Create-Derive-Bytes @deriveBytesArguments) {
                 )
             } catch [CryptographicException] {
                 Write-Host 'Wrong Password'
+                Write-Host -NoNewLine 'Press any key to continue...'
+                $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') > $null
                 exit
             }
 
