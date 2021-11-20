@@ -12,7 +12,7 @@ Create an encrypted and password-protected PowerShell script.
 4. Encrypted and compressed output script will be shown.
 
 To execute the output immediately:
-1. `.\PSEnscrypt.ps1 | iex`.
+1. `.\PSEnscrypt.ps1 | pwsh -c -`.
 2. Enter the same password twice.
 
 To output script to another file for delayed execution:
