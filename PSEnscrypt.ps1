@@ -79,7 +79,7 @@ function Create-Derive-Bytes {
             )
         }
         finally {
-            # Clearing `$passworByteArray` is okay since .NET clones the array.
+            # Clearing `$passwordByteArray` is okay since .NET clones the array.
             # https://stackoverflow.com/questions/9734043/rfc2898derivebytes-pbkdf2-securestring-is-it-possible-to-use-a-secure-string/43858011#comment122723615_43858011
             [System.Array]::Clear($passwordByteArray, 0, $passwordByteArray.length)
             $handle.Free()
